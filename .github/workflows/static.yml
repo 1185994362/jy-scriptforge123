@@ -1,0 +1,43 @@
+# 将静态内容部署到 GitHub Pages 的简单工作流
+名称：将静态内容部署到 Pages: Deploy static content to Pages
+
+在：:
+  # 在针对默认分支的推送上运行# Runs on pushes targeting the default branch
+  推送：:
+    分支: ["main"]: ["main"]
+
+  # 允许您从 Actions 选项卡手动运行此工作流# Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch::
+
+# 设置 GITHUB_TOKEN 的权限以允许部署到 GitHub Pages
+权限：:
+  内容：阅读: read
+  页面：写入: write
+  id-token: 写入: write
+
+# 只允许一次并发部署，跳过在正在运行的部署和最新排队部署之间的排队运行。
+# 但是，请勿取消正在进行的运行，因为我们希望这些生产部署能够完成。
+并发：:
+  组: "pages": "pages"
+  取消进行中: 否: false
+
+职位：:
+  # 单次部署任务，因为我们只是在部署# Single deploy job since we're just deploying
+  部署：:
+    环境：:
+      名称：github-pages: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}: ${{ steps.deployment.outputs.page_url }}
+    运行环境：ubuntu-latest: ubuntu-latest
+    步骤：:
+      - 名称: 结账name: Checkout
+        使用：actions/checkout@v4: actions/checkout@v4
+      - 名称：设置页面name: Setup Pages
+        使用：actions/configure-pages@v5: actions/configure-pages@v5
+      - 名称：上传工件name: Upload artifact
+        使用：actions/upload-pages-artifact@v3: actions/upload-pages-artifact@v3
+        使用：:
+          # 上传整个仓库# Upload entire repository
+          路径: '.': '.'
+      - 名称：部署到 GitHub Pagesname: Deploy to GitHub Pages
+        id: 部署: deployment
+        使用：actions/deploy-pages@v5: actions/deploy-pages@v5
