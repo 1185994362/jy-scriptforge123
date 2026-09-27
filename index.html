@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>易语言脚本教学 · 直播课堂</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230d1117'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='16' font-weight='bold' fill='%233fb950' text-anchor='middle'%3E%E6%98%93%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#0d1117;
+    --panel:#161b22;
+    --panel-2:#1c2129;
+    --border:#30363d;
+    --text:#e6edf3;
+    --muted:#8b949e;
+    --blue:#58a6ff;
+    --green:#3fb950;
+    --orange:#ffa657;
+    --purple:#d2a8ff;
+    --red:#ff7b72;
+    --mono:Consolas,"JetBrains Mono","SF Mono",Menlo,monospace;
+    --sans:"Microsoft YaHei","PingFang SC","Segoe UI",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+
+  /* ===== 顶部窗口栏 ===== */
+  .titlebar{
+    background:var(--panel);
+    border-bottom:1px solid var(--border);
+    position:sticky;top:0;z-index:50;
+  }
+  .titlebar .inner{
+    display:flex;align-items:center;gap:14px;
+    height:52px;
+  }
+  .dots{display:flex;gap:8px}
+  .dots span{width:12px;height:12px;border-radius:50%}
+  .dots .r{background:#ff5f56}.dots .y{background:#ffbd2e}.dots .g{background:#27c93f}
+  .filename{
+    font-family:var(--mono);font-size:14px;color:var(--muted);
+  }
+  .filename b{color:var(--text);font-weight:normal}
+  .live-tag{
+    margin-left:auto;
+    font-family:var(--mono);font-size:12px;
+    color:var(--red);
+    border:1px solid var(--red);
+    padding:3px 10px;border-radius:4px;
+    display:flex;align-items:center;gap:6px;
+  }
+  .live-tag::before{
+    content:"";width:7px;height:7px;border-radius:50%;
+    background:var(--red);
+    animation:blink 1.2s infinite;
+  }
+  @keyframes blink{50%{opacity:.2}}
+
+  /* ===== Hero ===== */
+  .hero{
+    padding:72px 0 56px;
+    border-bottom:1px solid var(--border);
+    position:relative;
+    overflow:hidden;
+  }
+  .hero::before{
+    content:"";position:absolute;inset:0;
+    background-image:
+      linear-gradient(rgba(88,166,255,.04) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(88,166,255,.04) 1px,transparent 1px);
+    background-size:40px 40px;
+    pointer-events:none;
+  }
+  .code-comment{
+    font-family:var(--mono);
+    color:var(--muted);
+    font-size:15px;
+    margin-bottom:22px;
+    position:relative;
+  }
+  .code-comment .slash{color:var(--muted)}
+  h1{
+    font-size:clamp(40px,6.5vw,76px);
+    line-height:1.08;
+    font-weight:800;
+    letter-spacing:-1px;
+    position:relative;
+  }
+  h1 .kw{color:var(--purple)}
+  h1 .fn{color:var(--blue)}
+  h1 .str{color:var(--green)}
+  .hero-sub{
+    margin-top:26px;
+    font-size:clamp(16px,1.6vw,20px);
+    color:var(--muted);
+    max-width:720px;
+    position:relative;
+  }
+  .hero-sub b{color:var(--text);font-weight:600}
+  .hero-stats{
+    margin-top:40px;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:16px;
+    position:relative;
+  }
+  .stat{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:18px 20px;
+  }
+  .stat .num{
+    font-family:var(--mono);
+    font-size:30px;font-weight:700;
+    color:var(--green);
+  }
+  .stat .lbl{
+    font-size:13px;color:var(--muted);margin-top:4px;
+  }
+
+  /* ===== 通用 section ===== */
+  section{padding:64px 0;border-bottom:1px solid var(--border)}
+  .sec-head{
+    font-family:var(--mono);
+    font-size:14px;color:var(--orange);
+    margin-bottom:10px;
+  }
+  .sec-title{
+    font-size:clamp(26px,3.4vw,38px);
+    font-weight:700;
+    margin-bottom:36px;
+    letter-spacing:-.5px;
+  }
+
+  /* ===== 课程模块 ===== */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:18px;
+  }
+  .card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:24px;
+    transition:border-color .2s,transform .2s;
+  }
+  .card:hover{border-color:var(--blue)}
+  .card .icon{
+    width:40px;height:40px;
+    border-radius:8px;
+    background:var(--panel-2);
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:16px;
+    color:var(--blue);
+  }
+  .card h3{font-size:18px;margin-bottom:8px}
+  .card p{font-size:14px;color:var(--muted);line-height:1.7}
+  .card .tag{
+    display:inline-block;
+    font-family:var(--mono);font-size:12px;
+    color:var(--green);
+    background:rgba(63,185,80,.1);
+    padding:2px 8px;border-radius:4px;
+    margin-top:14px;
+  }
+
+  /* ===== 时间轴 / 学习路径 ===== */
+  .timeline{
+    display:grid;
+    grid-template-columns:90px 2px 1fr;
+    row-gap:0;
+    column-gap:20px;
+  }
+  .tl-time{
+    font-family:var(--mono);
+    color:var(--blue);
+    font-size:14px;
+    text-align:right;
+    padding-top:4px;
+  }
+  .tl-axis{
+    position:relative;
+    background:var(--border);
+    justify-self:center;
+    width:2px;
+  }
+  .tl-axis::after{
+    content:"";
+    position:absolute;
+    top:8px;left:50%;
+    transform:translateX(-50%);
+    width:12px;height:12px;
+    border-radius:50%;
+    background:var(--bg);
+    border:2px solid var(--green);
+  }
+  .tl-content{
+    padding:0 0 36px 8px;
+  }
+  .tl-content h4{font-size:19px;margin-bottom:6px}
+  .tl-content p{color:var(--muted);font-size:14.5px;max-width:680px}
+  .tl-content .chips{margin-top:10px;display:flex;flex-wrap:wrap;gap:8px}
+  .chip{
+    font-family:var(--mono);font-size:12px;
+    color:var(--purple);
+    border:1px solid var(--border);
+    padding:3px 10px;border-radius:4px;
+  }
+
+  /* ===== 代码展示块 ===== */
+  .codeblock{
+    background:#010409;
+    border:1px solid var(--border);
+    border-radius:10px;
+    overflow:hidden;
+    font-family:var(--mono);
+    font-size:14.5px;
+    line-height:1.8;
+  }
+  .codeblock .cb-head{
+    background:var(--panel);
+    padding:10px 16px;
+    color:var(--muted);
+    font-size:13px;
+    border-bottom:1px solid var(--border);
+    display:flex;justify-content:space-between;
+  }
+  .codeblock pre{padding:20px;overflow-x:auto}
+  .c-cm{color:#8b949e}
+  .c-kw{color:#ff7b72}
+  .c-fn{color:#d2a8ff}
+  .c-str{color:#a5d6ff}
+  .c-num{color:#79c0ff}
+  .c-var{color:#ffa657}
+
+  /* ===== 适合人群 ===== */
+  .two-col{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:24px;
+    align-items:start;
+  }
+  .check-list{list-style:none}
+  .check-list li{
+    padding:12px 0;
+    border-bottom:1px dashed var(--border);
+    display:flex;gap:12px;align-items:flex-start;
+    font-size:15.5px;
+  }
+  .check-list li:last-child{border-bottom:none}
+  .check-list svg{flex-shrink:0;margin-top:4px;color:var(--green)}
+
+  /* ===== CTA ===== */
+  .cta{
+    text-align:center;
+    padding:80px 0;
+  }
+  .cta h2{
+    font-size:clamp(28px,4vw,46px);
+    font-weight:800;
+    margin-bottom:16px;
+  }
+  .cta p{color:var(--muted);font-size:17px;margin-bottom:32px}
+  .cta .btns{
+    display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
+  }
+  .btn{
+    font-family:var(--sans);
+    font-size:16px;font-weight:600;
+    padding:14px 32px;
+    border-radius:8px;
+    cursor:pointer;
+    border:1px solid transparent;
+    transition:transform .15s;
+  }
+  .btn:hover{transform:translateY(-2px)}
+  .btn-primary{background:var(--green);color:#0d1117}
+  .btn-ghost{background:transparent;color:var(--text);border-color:var(--border)}
+  .btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
+
+  footer{
+    padding:28px 0;
+    text-align:center;
+    color:var(--muted);
+    font-family:var(--mono);
+    font-size:13px;
+  }
+
+  /* ===== 响应式 ===== */
+  @media (max-width:880px){
+    .hero-stats{grid-template-columns:repeat(2,1fr)}
+    .grid{grid-template-columns:1fr}
+    .two-col{grid-template-columns:1fr}
+    .timeline{grid-template-columns:64px 2px 1fr}
+    .wrap{padding:0 18px}
+    .hero{padding:48px 0 40px}
+  }
+</style>
+</head>
+<body>
+
+<!-- 顶部窗口栏 -->
+<div class="titlebar">
+  <div class="wrap inner">
+    <div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+    <div class="filename">易语言 / <b>脚本教学课堂.e</b></div>
+    <div class="live-tag">LIVE 直播中</div>
+  </div>
+</div>
+
+<!-- Hero -->
+<header class="hero">
+  <div class="wrap">
+    <div class="code-comment"><span class="slash">//</span> 欢迎来到易语言脚本实战课堂 · 从零开始，写出属于你自己的自动化脚本</div>
+    <h1>
+      <span class="kw">子程序</span> <span class="fn">_启动窗口_创建完毕</span>
+      <br>
+      <span class="str">"易语言脚本教学"</span>
+    </h1>
+    <p class="hero-sub">
+      用<b>中文</b>写代码，从零入门游戏脚本、办公自动化、模拟键鼠与找图找色。
+      不讲空洞理论，每一行代码都能跑、每个案例都能用。
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><div class="num">100+</div><div class="lbl">实战案例精讲</div></div>
+      <div class="stat"><div class="num">0 基础</div><div class="lbl">也能跟得上</div></div>
+      <div class="stat"><div class="num">80+</div><div class="lbl">课时持续更新</div></div>
+      <div class="stat"><div class="num">1v1</div><div class="lbl">课后答疑辅导</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- 课程内容 -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">// module.curriculum</div>
+    <h2 class="sec-title">这门课教什么</h2>
+    <div class="grid">
+      <div class="card">
+        <div class="icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </div>
+        <h3>易语言基础语法</h3>
+        <p>变量、常量、数据类型、判断与循环、子程序调用、数组与流程控制。中文编程，看完就能写。</p>
+        <span class="tag">入门篇</span>
+      </div>
+      <div class="card">
+        <div class="icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        </div>
+        <h3>窗口与界面控件</h3>
+        <p>窗口创建、按钮编辑框列表框、菜单与对话框、皮肤与布局，做出像模像样的工具软件界面。</p>
+        <span class="tag">进阶篇</span>
+      </div>
+      <div class="card">
+        <div class="icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+        <h3>模拟键鼠与快捷键</h3>
+        <p>模拟点击、键盘输入、鼠标移动、全局热键、消息投递，解放双手，重复操作一键完成。</p>
+        <span class="tag">实战篇</span>
+      </div>
+      <div class="card">
+        <div class="icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <h3>找图找色识图</h3>
+        <p>屏幕截图、区域找图、多点找色、OCR 文字识别，让脚本"看"得懂屏幕上的画面。</p>
+        <span class="tag">实战篇</span>
+      </div>
+      <div class="card">
+        <div class="icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+        </div>
+        <h3>内存读写与进程</h3>
+        <p>进程枚举、模块基址、内存读写、封包与地址偏移，理解脚本与程序之间的数据交互。</p>
+        <span class="tag">高阶篇</span>
+      </div>
+      <div class="card">
+        <div class="icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <h3>多线程与网络</h3>
+        <p>多线程并行、延时与锁、HTTP 请求、JSON 解析、POST 提交，脚本不再单线程卡死。</p>
+        <span class="tag">高阶篇</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 学习路径 -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">// learning.path</div>
+    <h2 class="sec-title">四步走上脚本开发</h2>
+    <div class="timeline">
+      <div class="tl-time">第 1 阶段</div>
+      <div class="tl-axis"></div>
+      <div class="tl-content">
+        <h4>入门：中文语法速成</h4>
+        <p>装好易语言开发环境，认识界面，写出第一个"Hello World"，掌握变量、判断、循环与子程序。</p>
+        <div class="chips"><span class="chip">环境搭建</span><span class="chip">数据类型</span><span class="chip">流程控制</span></div>
+      </div>
+
+      <div class="tl-time">第 2 阶段</div>
+      <div class="tl-axis"></div>
+      <div class="tl-content">
+        <h4>进阶：做出完整小工具</h4>
+        <p>用按钮、编辑框、列表框拼出一个带界面的实用小工具，理解事件驱动与控件之间的数据传递。</p>
+        <div class="chips"><span class="chip">窗口控件</span><span class="chip">事件命令</span><span class="chip">文件读写</span></div>
+      </div>
+
+      <div class="tl-time">第 3 阶段</div>
+      <div class="tl-axis"></div>
+      <div class="tl-content">
+        <h4>实战：模拟操作自动化</h4>
+        <p>模拟键鼠、全局热键、找图找色，做出能自动重复操作的脚本，理解坐标、区域与图像匹配。</p>
+        <div class="chips"><span class="chip">模拟键鼠</span><span class="chip">找图找色</span><span class="chip">OCR 识别</span></div>
+      </div>
+
+      <div class="tl-time">第 4 阶段</div>
+      <div class="tl-axis"></div>
+      <div class="tl-content">
+        <h4>高阶：商业级脚本框架</h4>
+        <p>多线程、内存读写、网络请求、配置文件、自动更新，把脚本做成稳定可分发的成品项目。</p>
+        <div class="chips"><span class="chip">多线程</span><span class="chip">内存读写</span><span class="chip">HTTP 请求</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 代码示例 -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">// demo.e</div>
+    <h2 class="sec-title">一节课你会写出这样的代码</h2>
+    <div class="codeblock">
+      <div class="cb-head"><span>demo.e · 易语言源码</span><span>UTF-8</span></div>
+      <pre><span class="c-cm">// 主程序：每隔 1 秒在屏幕上找一次目标图片，找到就自动点击</span>
+<span class="c-kw">.版本 2</span>
+<span class="c-kw">.支持库</span> spec
+
+<span class="c-kw">.子程序</span> <span class="fn">_开始按钮_被单击</span>
+    <span class="c-var">.局部变量</span> 坐标, 整数型
+    <span class="c-var">.局部变量</span> 次数, 整数型
+
+    <span class="c-kw">判断循环首</span> (<span class="c-var">运行中</span> ＝ <span class="c-num">真</span>)
+        坐标 ＝ <span class="fn">找图_屏幕区域</span> (<span class="c-num">0</span>, <span class="c-num">0</span>, <span class="fn">取屏幕宽度</span> (), <span class="fn">取屏幕高度</span> (), <span class="str">"目标.png"</span>, <span class="c-num">0.9</span>)
+        <span class="c-kw">如果真</span> (坐标 ≠ <span class="c-num">-1</span>)
+            <span class="fn">模拟鼠标_点击</span> (坐标 Ｘ, 坐标 Ｙ, <span class="c-num">#左键单击</span>)
+            次数 ＝ 次数 ＋ <span class="c-num">1</span>
+            <span class="fn">编辑框_日志.加入文本</span> (<span class="str">"第 "</span> ＋ 到文本 (次数) ＋ <span class="str">" 次命中，已自动点击"</span> ＋ #换行符)
+        <span class="c-kw">如果真结束</span>
+        <span class="fn">延时</span> (<span class="c-num">1000</span>)
+    <span class="c-kw">判断循环尾</span> ()</pre>
+    </div>
+  </div>
+</section>
+
+<!-- 适合人群 -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">// who.is.this.for</div>
+    <h2 class="sec-title">这门课适合谁</h2>
+    <div class="two-col">
+      <ul class="check-list">
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>完全零基础，想学一门能立刻做出东西的编程语言</li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>想做游戏脚本、办公自动化、批量重复操作的人</li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>英文不好，看英文编程资料很吃力的同学</li>
+      </ul>
+      <ul class="check-list">
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>会一点易语言但只会照抄，不懂原理想系统提升</li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>想接私单、做小工具卖钱的业余开发者</li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>想转行做自动化测试、脚本开发的朋友</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta" style="border-bottom:none">
+  <div class="wrap">
+    <h2>准备好写出你的第一个脚本了吗？</h2>
+    <p>跟着直播，一行一行敲，下课就能跑通自己的小工具。</p>
+    <div class="btns">
+      <button class="btn btn-primary" onclick="joinLive()">进入直播间一起学</button>
+      <button class="btn btn-ghost" onclick="askOutline()">领取课程大纲</button>
+    </div>
+  </div>
+</section>
+
+<footer>
+  © 易语言脚本教学课堂 · 本页仅用于直播教学演示
+</footer>
+
+<script>
+  function joinLive(){
+    alert("演示页：请在直播间点击关注 / 上车按钮进入课堂。");
+  }
+  function askOutline(){
+    alert("演示页：课后联系老师领取完整课程大纲与资料包。");
+  }
+</script>
+
+</body>
+</html>
